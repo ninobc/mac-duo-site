@@ -1,6 +1,7 @@
 import * as THREE from 'three';
-import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 import { vertexShader, fragmentShader } from './fold-shader.js';
 import { presets, frame as foldFrame } from './fold-math.js';
 import { buildDesktop, PADDING } from './desktop.js';
@@ -13,6 +14,7 @@ const canvas = document.getElementById('scene');
 const stage = document.getElementById('stage');
 const heroCopy = document.getElementById('hero-copy');
 const captions = [...document.querySelectorAll('.caption')];
+const finaleCopy = document.getElementById('finale-copy');
 const angleLabel = document.getElementById('angle');
 const lidLine = document.getElementById('lid-line');
 const hint = document.getElementById('hint');
@@ -21,7 +23,6 @@ const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const OPEN = 112, SHUT = 6;
 const effect = presets.duo;
-const SCREEN = { w: 1512, h: 982 };   // the virtual display, in points
 
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance' });
 renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
@@ -43,50 +44,11 @@ const fill = new THREE.DirectionalLight(0xdfe8ff, 0.5); fill.position.set(4, 2, 
 scene.add(new THREE.AmbientLight(0xffffff, 0.25));
 
 // ---- MacBook -----------------------------------------------------------------
+// A real MacBook model (glTF, Draco). Its `screen` node is the lid, hinged at
+// its own origin; `matte` is the display face, which gets the fold shader.
 const mac = new THREE.Group();
 scene.add(mac);
-
-const aluminium = new THREE.MeshPhysicalMaterial({ color: 0xd7d9de, metalness: 0.85, roughness: 0.38, clearcoat: 0.25, clearcoatRoughness: 0.4, envMapIntensity: 1.1 });
-const aluminiumDark = new THREE.MeshPhysicalMaterial({ color: 0xc3c6cc, metalness: 0.85, roughness: 0.45, envMapIntensity: 0.9 });
-
-const W = 3.13, D = 2.21, BASE_H = 0.155, LID_T = 0.046;
-const base = new THREE.Mesh(new RoundedBoxGeometry(W, BASE_H, D, 4, 0.06), aluminium);
-base.position.y = BASE_H / 2;
-mac.add(base);
-
-// Keyboard deck: a canvas of keys, so the frost has something under it.
-const keys = document.createElement('canvas'); keys.width = 1024; keys.height = 400;
-{
-  const c = keys.getContext('2d');
-  c.fillStyle = '#c9ccd3'; c.fillRect(0, 0, 1024, 400);
-  const cols = 14, rows = 6, gap = 6, kw = (1024 - gap * (cols + 1)) / cols, kh = (400 - gap * (rows + 1)) / rows;
-  for (let r = 0; r < rows; r++) for (let k = 0; k < cols; k++) {
-    const wide = r === rows - 1 && k > 4 && k < 9; if (r === rows - 1 && k > 5 && k < 9) continue;
-    c.fillStyle = '#26272c';
-    const x = gap + k * (kw + gap), y = gap + r * (kh + gap), w = wide ? kw * 4 + gap * 3 : kw;
-    c.beginPath(); c.roundRect(x, y, w, kh, 6); c.fill();
-  }
-}
-const keyTex = new THREE.CanvasTexture(keys); keyTex.colorSpace = THREE.SRGBColorSpace; keyTex.anisotropy = 4;
-const keyboard = new THREE.Mesh(new THREE.PlaneGeometry(2.72, 1.06), new THREE.MeshStandardMaterial({ map: keyTex, roughness: 0.75, metalness: 0.1 }));
-keyboard.rotation.x = -Math.PI / 2; keyboard.position.set(0, BASE_H + 0.002, -0.36);
-mac.add(keyboard);
-const trackpad = new THREE.Mesh(new THREE.PlaneGeometry(1.3, 0.82), aluminiumDark);
-trackpad.rotation.x = -Math.PI / 2; trackpad.position.set(0, BASE_H + 0.002, 0.62);
-mac.add(trackpad);
-
-// Lid, hinged at the back edge of the base.
-const hinge = new THREE.Group();
-hinge.position.set(0, BASE_H, -D / 2 + 0.04);
-mac.add(hinge);
-const lid = new THREE.Mesh(new RoundedBoxGeometry(W, D, LID_T, 4, 0.03), aluminium);
-lid.position.set(0, D / 2, LID_T / 2);
-hinge.add(lid);
-const bezel = new THREE.Mesh(new THREE.PlaneGeometry(W - 0.05, D - 0.05), new THREE.MeshStandardMaterial({ color: 0x0b0b0e, roughness: 0.35, metalness: 0.2 }));
-bezel.position.set(0, D / 2, LID_T + 0.001);
-hinge.add(bezel);
-
-// The screen: our fold shader.
+const SCREEN = { w: 1512, h: 982 };   // the virtual display, in points
 const uniforms = {
   picture: { value: null },
   toPicture: { value: new THREE.Matrix3() },
@@ -100,14 +62,40 @@ const uniforms = {
   sheenAmount: { value: 0 }, sheenPos: { value: 0 }, grain: { value: effect.grain }, time: { value: 0 }, brightness: { value: 1 },
 };
 const screenMaterial = new THREE.ShaderMaterial({ uniforms, vertexShader, fragmentShader, glslVersion: THREE.GLSL3 });
-const SCREEN_W = 2.99, SCREEN_H = SCREEN_W * SCREEN.h / SCREEN.w;
-const screen = new THREE.Mesh(new THREE.PlaneGeometry(SCREEN_W, SCREEN_H), screenMaterial);
-screen.position.set(0, D / 2 + 0.01, LID_T + 0.002);
-hinge.add(screen);
-// The notch.
-const notch = new THREE.Mesh(new THREE.PlaneGeometry(0.28, 0.06), new THREE.MeshBasicMaterial({ color: 0x000000 }));
-notch.position.set(0, D / 2 + 0.01 + SCREEN_H / 2 - 0.03, LID_T + 0.003);
-hinge.add(notch);
+
+let hinge = null;              // the lid node
+let lidRest = 0;               // the model's own lid rotation (radians about x)
+let lidSign = 1;
+
+const draco = new DRACOLoader(); draco.setDecoderPath('/draco/');
+const loader = new GLTFLoader(); loader.setDRACOLoader(draco);
+loader.load('/models/macbook.glb', gltf => {
+  const model = gltf.scene;
+  // Materials: a cleaner aluminium and a proper black for the bezel.
+  model.traverse(o => {
+    if (!o.isMesh) return;
+    o.castShadow = o.receiveShadow = false;
+    if (o.name === 'matte') { o.material = screenMaterial; }
+    else if (o.material && o.material.name === 'aluminium') {
+      o.material = new THREE.MeshPhysicalMaterial({ color: 0xd4d6db, metalness: 0.85, roughness: 0.4, clearcoat: 0.2, clearcoatRoughness: 0.5, envMapIntensity: 1.1 });
+    } else if (o.material && o.material.name === 'blackmatte') {
+      o.material = new THREE.MeshStandardMaterial({ color: 0x141518, roughness: 0.6, metalness: 0.1 });
+    }
+  });
+  hinge = model.getObjectByName('screen');
+  lidRest = hinge ? hinge.rotation.x : 0;
+  // Fit: 3.13 units wide, resting on y = 0, centred on x/z.
+  const box = new THREE.Box3().setFromObject(model);
+  const size = new THREE.Vector3(); box.getSize(size);
+  const scale = 3.13 / size.x;
+  model.scale.setScalar(scale);
+  const fitted = new THREE.Box3().setFromObject(model);
+  const centre = new THREE.Vector3(); fitted.getCenter(centre);
+  model.position.set(-centre.x, -fitted.min.y, -centre.z);
+  mac.add(model);
+  console.log('macbook', { size: size.toArray(), lidRest, hinge: hinge && hinge.position.toArray() });
+  dirty = true; schedule();
+});
 
 // Contact shadow.
 const shadowCanvas = document.createElement('canvas'); shadowCanvas.width = shadowCanvas.height = 256;
@@ -168,27 +156,36 @@ function fromScroll() {
 function ease(t) { return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2; }
 
 function update(dt, t) {
-  // Phases along the scroll: hero, close, hold.
-  const closing = Math.min(Math.max((progress - 0.12) / 0.78, 0), 1);
+  // Phases along the scroll: hero (0–0.12), close (0.12–0.7), finale (0.7–1).
+  const closing = Math.min(Math.max((progress - 0.12) / 0.58, 0), 1);
+  const finale = ease(Math.min(Math.max((progress - 0.7) / 0.22, 0), 1));
   angleTarget = OPEN + (SHUT - OPEN) * ease(closing);
   if (reduced) { angle = angleTarget; angleVelocity = 0; } else {
     const k = 10, acc = k * k * (angleTarget - angle) - 2 * k * angleVelocity;
     angleVelocity += acc * dt; angle += angleVelocity * dt;
   }
 
-  // Lid pose. 90° is upright; 0° lies flat on the keys, screen down.
-  hinge.rotation.x = (90 - angle) * Math.PI / 180;
+  // Lid pose: the model's rest pose is fully open (OPEN); closing rotates
+  // the lid about the hinge's x axis.
+  // The model rests fully upright (90°).
+  if (hinge) hinge.rotation.x = lidRest + lidSign * (90 - angle) * Math.PI / 180;
 
   // Camera: from a hero pose (MacBook low, copy above it) to a centred,
   // slightly lower and closer view while it folds.
   const heroT = Math.min(progress / 0.2, 1);
-  const camY = 3.3 - 1.6 * ease(heroT), camZ = 10.4 - 3.2 * ease(heroT);
-  const idle = reduced ? 0 : (1 - heroT) * Math.sin(t * 0.7) * 0.04;
-  camera.position.set(Math.sin(t * 0.13) * 0.25 * (1 - heroT), camY + idle, camZ);
   const narrow = camera.aspect < 0.9 ? 0.5 : 0;
-  lookAt.set(0, 2.95 + narrow - (2.0 + narrow) * ease(heroT), 0);
+  // Closing view → finale: a centred, slightly higher front view of the
+  // closed MacBook, sitting under the closing line.
+  let camY = 3.3 - 1.6 * ease(heroT), camZ = 10.4 - 3.2 * ease(heroT);
+  let lookY = 2.95 + narrow - (2.0 + narrow) * ease(heroT);
+  camY += (3.6 - camY) * finale;
+  camZ += (7.6 + narrow * 2 - camZ) * finale;
+  lookY += (-0.35 - lookY) * finale;
+  const idle = reduced ? 0 : (1 - heroT) * Math.sin(t * 0.7) * 0.04;
+  camera.position.set(Math.sin(t * 0.13) * 0.25 * (1 - heroT) * (1 - finale), camY + idle, camZ);
+  lookAt.set(0, lookY, 0);
   camera.lookAt(lookAt);
-  mac.rotation.y = -0.18 + 0.36 * (0.5 - 0.5 * Math.cos(closing * Math.PI)) * 0.35;
+  mac.rotation.y = (-0.16 + 0.10 * closing) * (1 - finale);
 
   // Screen.
   const f = foldFrame(effect, SCREEN.w, SCREEN.h, angle);
@@ -207,8 +204,10 @@ function update(dt, t) {
   heroCopy.style.pointerEvents = progress > 0.14 ? 'none' : '';
   for (const caption of captions) {
     const at = parseFloat(caption.dataset.at);
-    caption.classList.toggle('on', Math.abs(closing - at) < 0.14 && progress > 0.14);
+    caption.classList.toggle('on', Math.abs(closing - at) < 0.14 && progress > 0.14 && finale < 0.05);
   }
+  finaleCopy.style.opacity = String(finale);
+  finaleCopy.style.transform = `translate(-50%, ${(1 - finale) * 24}px)`;
   angleLabel.textContent = Math.round(angle);
   const a = Math.min(Math.max(angle, 5), 135) * Math.PI / 180;
   lidLine.setAttribute('d', `M4.5 12.5l${(11 * Math.cos(a)).toFixed(2)} ${(-11 * Math.sin(a)).toFixed(2)}`);
