@@ -21,7 +21,7 @@ const hint = document.getElementById('hint');
 const scrub = document.getElementById('scrub');
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-const OPEN = 112, SHUT = 6;
+const OPEN = 112, SHUT = 1;
 const effect = presets.duo;
 
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance' });
@@ -64,6 +64,7 @@ const uniforms = {
 const screenMaterial = new THREE.ShaderMaterial({ uniforms, vertexShader, fragmentShader, glslVersion: THREE.GLSL3 });
 
 let hinge = null;              // the lid node
+let hingeRestY = 0, modelScale = 1;
 let lidRest = 0;               // the model's own lid rotation (radians about x)
 let lidSign = 1;
 
@@ -84,10 +85,12 @@ loader.load('/models/macbook.glb', gltf => {
   });
   hinge = model.getObjectByName('screen');
   lidRest = hinge ? hinge.rotation.x : 0;
+  hingeRestY = hinge ? hinge.position.y : 0;
   // Fit: 3.13 units wide, resting on y = 0, centred on x/z.
   const box = new THREE.Box3().setFromObject(model);
   const size = new THREE.Vector3(); box.getSize(size);
   const scale = 3.13 / size.x;
+  modelScale = scale;
   model.scale.setScalar(scale);
   const fitted = new THREE.Box3().setFromObject(model);
   const centre = new THREE.Vector3(); fitted.getCenter(centre);
@@ -168,7 +171,11 @@ function update(dt, t) {
   // Lid pose: the model's rest pose is fully open (OPEN); closing rotates
   // the lid about the hinge's x axis.
   // The model rests fully upright (90°).
-  if (hinge) hinge.rotation.x = lidRest + lidSign * (90 - angle) * Math.PI / 180;
+  if (hinge) {
+    hinge.rotation.x = lidRest + lidSign * (90 - angle) * Math.PI / 180;
+    // The model's pivot sits a touch above the deck; settle the lid onto it.
+    hinge.position.y = hingeRestY - (0.09 / modelScale) * Math.pow(closing, 2);
+  }
 
   // Camera: from a hero pose (MacBook low, copy above it) to a centred,
   // slightly lower and closer view while it folds.
@@ -197,14 +204,14 @@ function update(dt, t) {
   uniforms.sheenPos.value = f.sheenPos;
   uniforms.time.value = t % 1000;
   // The display sleeps as the lid meets the keys.
-  uniforms.brightness.value = Math.min(Math.max((angle - 8) / 8, 0), 1);
+  uniforms.brightness.value = Math.min(Math.max((angle - 4) / 8, 0), 1);
 
   // Copy and captions.
   heroCopy.style.opacity = String(Math.max(0, 1 - progress / 0.14));
   heroCopy.style.pointerEvents = progress > 0.14 ? 'none' : '';
   for (const caption of captions) {
     const at = parseFloat(caption.dataset.at);
-    caption.classList.toggle('on', Math.abs(closing - at) < 0.14 && progress > 0.14 && finale < 0.05);
+    caption.classList.toggle('on', Math.abs(closing - at) < 0.12 && progress > 0.14 && finale < 0.05);
   }
   finaleCopy.style.opacity = String(finale);
   finaleCopy.style.transform = `translate(-50%, ${(1 - finale) * 24}px)`;
