@@ -27,7 +27,7 @@ export default function Home() {
               <article className="card">
                 <div className="icon"><svg viewBox="0 0 24 24"><path d="M4 6h16v10H4z" fill="none" stroke="currentColor" strokeWidth="1.6" /><path d="M2 19h20" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" /></svg></div>
                 <h3>Frozen in place</h3>
-                <p>As the lid passes 95°, your desktop is pinned where it is in the room. Every pixel of the glass then shows what you would see of that picture through it.</p>
+                <p>As the lid passes 92°, your desktop is pinned where it is in the room. Every pixel of the glass then shows what you would see of that picture through it.</p>
               </article>
               <article className="card">
                 <div className="icon"><svg viewBox="0 0 24 24"><path d="M4 18c4-8 12-8 16 0" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" /><path d="M6 12c3-5 9-5 12 0" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" opacity=".55" /><path d="M8.5 7c2-2.5 5-2.5 7 0" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" opacity=".3" /></svg></div>
@@ -51,7 +51,7 @@ export default function Home() {
             <div className="cards three media">
               <figure className="card">
                 <img src="/assets/look-duo.jpg" alt="The Duo style at mid-fold" width="1280" height="800" loading="lazy" decoding="async" />
-                <figcaption><strong>Duo</strong><span>The reference. Starts at 95°, fully frosted 60° later.</span></figcaption>
+                <figcaption><strong>Duo</strong><span>The default. Starts at 92°, fully frosted 58° later.</span></figcaption>
               </figure>
               <figure className="card">
                 <img src="/assets/look-soft.jpg" alt="The Soft style at mid-fold" width="1280" height="800" loading="lazy" decoding="async" />
