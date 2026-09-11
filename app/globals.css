@@ -110,6 +110,12 @@ p { margin: 0; }
 
 /* Sections */
 .section { padding: 120px 0; }
+.kicker { text-align: center; font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 14px; }
+.install-card .kicker { text-align: left; }
+.specs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px 40px; margin: 52px 0 0; }
+.specs > div { border-top: 1px solid var(--line); padding-top: 18px; }
+.specs dt { font-size: 30px; font-weight: 700; letter-spacing: -0.03em; line-height: 1; margin-bottom: 10px; }
+.specs dd { margin: 0; color: var(--ink-2); font-size: 16px; }
 .section.tinted { background: var(--tint); }
 .sub { text-align: center; color: var(--ink-2); font-size: clamp(16px, 1.4vw, 19px); max-width: 680px; margin: 18px auto 0; }
 .cards { display: grid; gap: 20px; margin-top: 52px; }

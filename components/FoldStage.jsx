@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useRef } from 'react';
+import { preload } from 'react-dom';
 
 // The pinned hero + showcase. The Three.js scene lives in lib/stage.js and
 // mounts on the canvas once the component is on screen.
@@ -8,6 +9,10 @@ export default function FoldStage() {
     canvas: useRef(null), stage: useRef(null), heroCopy: useRef(null), finaleCopy: useRef(null),
     angleLabel: useRef(null), lidLine: useRef(null), hint: useRef(null), scrub: useRef(null), captions: useRef(null),
   };
+
+  // Warm the model and wallpaper while the copy renders.
+  preload('/models/macbook-pro-14.glb', { as: 'fetch', crossOrigin: 'anonymous' });
+  preload('/assets/wallpaper-dunes-1800.jpg', { as: 'image' });
 
   useEffect(() => {
     let dispose = () => {};
@@ -31,22 +36,22 @@ export default function FoldStage() {
         <div className="sky" />
         <canvas id="scene" ref={refs.canvas} aria-hidden="true" />
         <div className="hero-copy" ref={refs.heroCopy}>
-          <p className="eyebrow"><span className="dot" />For MacBook with a lid angle sensor</p>
+          <p className="eyebrow"><span className="dot" />The iPhone Duo fold, for MacBook</p>
           <h1>Close the lid.<br /><em>The desktop stays.</em></h1>
-          <p className="lede">Mac Duo brings the iPhone&nbsp;Duo fold to your MacBook. As the lid comes down, what&apos;s on screen holds still in the room and softens into frosted light. Open it, and everything comes back into focus.</p>
+          <p className="lede">As the lid comes down, your desktop holds still in the room and softens into frosted light. Open it, and everything comes back into focus.</p>
           <div className="cta">
             <a className="button dark" href="https://github.com/ninobc/mac-duo/releases/latest/download/Mac-Duo.dmg"><DownloadIcon />Download for macOS</a>
-            <span className="meta">Free · macOS 14 or later · Apple silicon &amp; Intel</span>
+            <span className="meta">Free · macOS 14 or later</span>
           </div>
         </div>
         <div className="captions" ref={refs.captions} aria-hidden="true">
-          <p className="caption" data-at="0.25">The picture <em>holds still</em> while the glass folds over it.</p>
-          <p className="caption" data-at="0.55">Frost grows from the <em>far edge</em>, never from the hinge.</p>
-          <p className="caption" data-at="0.85">Open it again and it <em>comes back</em> through the same curve.</p>
+          <p className="caption" data-at="0.25">The picture <em>holds still.</em> The glass moves.</p>
+          <p className="caption" data-at="0.55">Frost from the <em>far edge.</em> Never from the hinge.</p>
+          <p className="caption" data-at="0.85">Open it, and it <em>comes back</em> the same way.</p>
         </div>
         <div className="finale-copy" ref={refs.finaleCopy} aria-hidden="true">
           <h2>Everything, exactly <em>where you left it.</em></h2>
-          <p>Open the lid and the desktop comes back into focus through the same curve.</p>
+          <p>Open the lid. The desktop comes back into focus.</p>
         </div>
         <div className="readout">
           <svg className="glyph" viewBox="0 0 20 16" aria-hidden="true"><g fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M4.5 12.5h12.5" /><path ref={refs.lidLine} d="M4.5 12.5l-3.4-10.4" /></g></svg>
