@@ -9,8 +9,8 @@
   --sky-2: #D9E9FF;
   --sky-3: #FFE0C8;
   --sky-4: #FFC7A3;
-  --sans: "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
-  --serif: "Instrument Serif", "New York", Georgia, serif;
+  --sans: var(--font-inter), -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  --serif: var(--font-serif), "New York", Georgia, serif;
   --mono: ui-monospace, "SF Mono", Menlo, monospace;
   --radius: 28px;
   --max: 1120px;

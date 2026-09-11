@@ -2,16 +2,15 @@
   "name": "mac-duo-site",
   "private": true,
   "version": "1.0.0",
-  "type": "module",
   "scripts": {
-    "dev": "vite --port 5180",
-    "build": "vite build",
-    "preview": "vite preview --port 5181"
+    "dev": "next dev -p 5180",
+    "build": "next build",
+    "start": "npx serve out -l 5181"
   },
   "dependencies": {
+    "next": "^15.3.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
     "three": "^0.170.0"
-  },
-  "devDependencies": {
-    "vite": "^6.0.0"
   }
 }
