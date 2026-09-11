@@ -72,8 +72,8 @@ export default function Home() {
                   <li><strong>Allow Screen Recording</strong> when asked. Mac Duo uses it to see the desktop for the second the lid is moving. Nothing is saved, nothing leaves the Mac.</li>
                 </ol>
                 <div className="cta">
-                  <a className="button dark" href="https://github.com/ninobc/mac-duo/releases/latest"><DownloadIcon />Download Mac Duo</a>
-                  <span className="meta">Version <Version /> · DMG · MIT license</span>
+                  <a className="button dark" href="https://github.com/ninobc/mac-duo/releases/latest/download/Mac-Duo.dmg"><DownloadIcon />Download Mac Duo</a>
+                  <span className="meta">Version <Version /> · DMG · MIT license · <a href="https://github.com/ninobc/mac-duo/releases/latest" rel="noopener">All releases</a></span>
                 </div>
               </div>
               <div className="install-art" aria-hidden="true">

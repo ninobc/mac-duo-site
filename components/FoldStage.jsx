@@ -35,7 +35,7 @@ export default function FoldStage() {
           <h1>Close the lid.<br /><em>The desktop stays.</em></h1>
           <p className="lede">Mac Duo brings the iPhone&nbsp;Duo fold to your MacBook. As the lid comes down, what&apos;s on screen holds still in the room and softens into frosted light. Open it, and everything comes back into focus.</p>
           <div className="cta">
-            <a className="button dark" href="#install"><DownloadIcon />Download for macOS</a>
+            <a className="button dark" href="https://github.com/ninobc/mac-duo/releases/latest/download/Mac-Duo.dmg"><DownloadIcon />Download for macOS</a>
             <span className="meta">Free · macOS 14 or later · Apple silicon &amp; Intel</span>
           </div>
         </div>

@@ -24,7 +24,7 @@ export default function Nav({ home = false }) {
           <a href="https://github.com/ninobc/mac-duo" rel="noopener">GitHub</a>
         </nav>
       )}
-      <a className="button dark small" href={home ? '#install' : '/#install'}>Download</a>
+      <a className="button dark small" href="https://github.com/ninobc/mac-duo/releases/latest/download/Mac-Duo.dmg">Download</a>
     </header>
   );
 }
