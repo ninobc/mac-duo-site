@@ -4,8 +4,11 @@
 // height above the hinge, normalised to what the glass still shows.
 export const vertexShader = /* glsl */`
   varying vec2 vUv;
+  uniform vec2 screenMin, screenExtent;
   void main() {
-    vUv = uv;
+    // Address the screen by where the vertex sits on the lid, not by the
+    // asset's UVs: bottom-left of the display is (0,0), top-right is (1,1).
+    vUv = (position.xy - screenMin) / screenExtent;
     gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
   }
 `;

@@ -21,7 +21,7 @@ const hint = document.getElementById('hint');
 const scrub = document.getElementById('scrub');
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-const OPEN = 112, SHUT = 1;
+const OPEN = 110, SHUT = 1;
 const effect = presets.duo;
 
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance' });
@@ -44,8 +44,10 @@ const fill = new THREE.DirectionalLight(0xdfe8ff, 0.5); fill.position.set(4, 2, 
 scene.add(new THREE.AmbientLight(0xffffff, 0.25));
 
 // ---- MacBook -----------------------------------------------------------------
-// A real MacBook model (glTF, Draco). Its `screen` node is the lid, hinged at
-// its own origin; `matte` is the display face, which gets the fold shader.
+// Apple's MacBook Pro 14 model (glTF, Draco). Parts are named `lid__…` and
+// `body__…`. The lid is re-based on a hinge pivot so it can turn, and the
+// display mesh gets the fold shader, addressed by its own geometry so the
+// asset's UVs don't matter.
 const mac = new THREE.Group();
 scene.add(mac);
 const SCREEN = { w: 1512, h: 982 };   // the virtual display, in points
@@ -55,6 +57,8 @@ const uniforms = {
   screenSize: { value: new THREE.Vector2(SCREEN.w, SCREEN.h) },
   paddedOrigin: { value: new THREE.Vector2(-PADDING, -PADDING) },
   paddedSize: { value: new THREE.Vector2(SCREEN.w + 2 * PADDING, SCREEN.h + 2 * PADDING) },
+  screenMin: { value: new THREE.Vector2(0, 0) },
+  screenExtent: { value: new THREE.Vector2(1, 1) },
   textureScale: { value: 1 },
   maxRadius: { value: effect.blurRadius },
   blurStrength: { value: 0 }, blurFloor: { value: effect.blurFloor }, maxDim: { value: effect.dimming }, maxLevel: { value: 10 },
@@ -63,42 +67,77 @@ const uniforms = {
 };
 const screenMaterial = new THREE.ShaderMaterial({ uniforms, vertexShader, fragmentShader, glslVersion: THREE.GLSL3 });
 
-let hinge = null;              // the lid node
-let hingeRestY = 0, modelScale = 1;
-let lidRest = 0;               // the model's own lid rotation (radians about x)
-let lidSign = 1;
+const aluminium = new THREE.MeshPhysicalMaterial({ color: 0xd9dbe0, metalness: 0.9, roughness: 0.42, clearcoat: 0.15, clearcoatRoughness: 0.5, envMapIntensity: 1.0 });
+const aluminiumDark = new THREE.MeshPhysicalMaterial({ color: 0x9a9da4, metalness: 0.9, roughness: 0.5, envMapIntensity: 0.8 });
+const blackGlass = new THREE.MeshPhysicalMaterial({ color: 0x0a0a0c, metalness: 0.1, roughness: 0.18, clearcoat: 0.6, clearcoatRoughness: 0.2 });
+const keys = new THREE.MeshStandardMaterial({ color: 0x1b1c20, roughness: 0.65, metalness: 0.05 });
+const rubber = new THREE.MeshStandardMaterial({ color: 0x2a2b2f, roughness: 0.9 });
+
+// Which named parts get which material.
+const DISPLAY = 'lid__abgVijaHVNRUvcc';
+const BLACK_GLASS = new Set(['lid__PbJkUSFBOfThIZE', 'lid__fiqlelggeOoTUAw', 'lid__WeTEPJkcTkMBwBo', 'lid__yxTDdMZViYkuOKm', 'lid__pPCeNYAcgHQGnfB', 'lid__CpRxqsFibJhVZKA', 'lid__FnbkdmFKVeCCxTX']);
+const KEYS = new Set(['body__RkSurqpnfNMQZfv', 'body__eAcvqfZlEdoxHsj', 'body__QYMcPaZnXQfyXcJ', 'body__jvyJQHpRnZNPEYh']);
+const RUBBER = new Set(['body__KCEhahuknsxQOxv', 'body__NdRhLFCrSxRNTxn', 'body__SjSNuZdtWKZRuoq']);
+const DARK = new Set(['body__QHqPxKdexBoFnAK', 'body__tEwRkclpxjXZzil', 'body__ZlizOzukFeXwbga', 'body__wXiLpiodZWNDroe', 'body__MrXuKTffTmUoNPF', 'body__RgJfwZBuZcVWHTq', 'body__DAuseNOrQKyrxKl', 'body__PTxrSKzcEmHVtif', 'body__guoofBSjCEiTIJr', 'lid__CEvArJuvvmtQsgk', 'lid__ESbzqoApOvgbqCM', 'lid__aUVveCqqwsqchVB', 'lid__ehiyYGFzDbgxhiD', 'body__KJGApIEIPKlDIsA', 'body__QMBrsnrwfcVKELm', 'body__MwHxcVTumDWogJY', 'body__RjGOdbHqvxkiDns', 'body__bYMJoztGEkchzEz', 'body__fERhErXVTNqvOgR', 'body__aqQHZmtSqmOcJrJ']);
+
+// The model is in centimetres, resting open. The hinge and the lid's lean
+// were read off the geometry.
+const HINGE = new THREE.Vector3(0, -0.45, -11.45);
+const LEAN = Math.atan2(19.02 - 12.35, 19.45 - 1.02);   // ≈ 20°: rests at 110°
+const REST_ANGLE = 90 + LEAN * 180 / Math.PI;
+const MODEL_SCALE = 0.1;                                // cm → dm
+
+let hinge = null;
 
 const draco = new DRACOLoader(); draco.setDecoderPath('/draco/');
 const loader = new GLTFLoader(); loader.setDRACOLoader(draco);
-loader.load('/models/macbook.glb', gltf => {
+loader.load('/models/macbook-pro-14.glb', gltf => {
   const model = gltf.scene;
-  // Materials: a cleaner aluminium and a proper black for the bezel.
-  model.traverse(o => {
-    if (!o.isMesh) return;
-    o.castShadow = o.receiveShadow = false;
-    if (o.name === 'matte') { o.material = screenMaterial; }
-    else if (o.material && o.material.name === 'aluminium') {
-      o.material = new THREE.MeshPhysicalMaterial({ color: 0xd4d6db, metalness: 0.85, roughness: 0.4, clearcoat: 0.2, clearcoatRoughness: 0.5, envMapIntensity: 1.1 });
-    } else if (o.material && o.material.name === 'blackmatte') {
-      o.material = new THREE.MeshStandardMaterial({ color: 0x141518, roughness: 0.6, metalness: 0.1 });
+  const lid = new THREE.Group();
+  const body = new THREE.Group();
+  const meshes = [];
+  model.traverse(o => { if (o.isMesh) meshes.push(o); });
+  for (const m of meshes) {
+    m.updateWorldMatrix(true, false);
+    m.geometry.applyMatrix4(m.matrixWorld);       // bake, the OBJ round trip left transforms flat anyway
+    m.position.set(0, 0, 0); m.rotation.set(0, 0, 0); m.scale.set(1, 1, 1);
+    const name = m.name || '';
+    if (name === DISPLAY) m.material = screenMaterial;
+    else if (BLACK_GLASS.has(name)) m.material = blackGlass;
+    else if (KEYS.has(name)) m.material = keys;
+    else if (RUBBER.has(name)) m.material = rubber;
+    else if (DARK.has(name)) m.material = aluminiumDark;
+    else m.material = aluminium;
+    if (name.startsWith('lid__')) {
+      // Lid-local frame: hinge at the origin, lid upright along +y.
+      m.geometry.translate(-HINGE.x, -HINGE.y, -HINGE.z);
+      m.geometry.rotateX(LEAN);
+      lid.add(m);
+    } else {
+      body.add(m);
     }
-  });
-  hinge = model.getObjectByName('screen');
-  lidRest = hinge ? hinge.rotation.x : 0;
-  hingeRestY = hinge ? hinge.position.y : 0;
-  // Fit: 3.13 units wide, resting on y = 0, centred on x/z.
-  const box = new THREE.Box3().setFromObject(model);
-  const size = new THREE.Vector3(); box.getSize(size);
-  const scale = 3.13 / size.x;
-  modelScale = scale;
-  model.scale.setScalar(scale);
-  const fitted = new THREE.Box3().setFromObject(model);
-  const centre = new THREE.Vector3(); fitted.getCenter(centre);
-  model.position.set(-centre.x, -fitted.min.y, -centre.z);
-  mac.add(model);
-  console.log('macbook', { size: size.toArray(), lidRest, hinge: hinge && hinge.position.toArray() });
+  }
+  // The display's own extent, for addressing the fold.
+  const display = lid.children.find(m => m.name === DISPLAY);
+  if (display) {
+    display.geometry.computeBoundingBox();
+    const b = display.geometry.boundingBox;
+    uniforms.screenMin.value.set(b.min.x, b.min.y);
+    uniforms.screenExtent.value.set(b.max.x - b.min.x, b.max.y - b.min.y);
+  }
+  hinge = new THREE.Group();
+  hinge.position.copy(HINGE);
+  hinge.add(lid);
+  const rig = new THREE.Group();
+  rig.add(body, hinge);
+  rig.scale.setScalar(MODEL_SCALE);
+  // Rest on the ground, centred.
+  const box = new THREE.Box3().setFromObject(rig);
+  rig.position.set(-(box.min.x + box.max.x) / 2, -box.min.y, -(box.min.z + box.max.z) / 2);
+  mac.add(rig);
+  console.log('macbook ready', { size: box.getSize(new THREE.Vector3()).toArray(), display: !!display, rest: REST_ANGLE });
   dirty = true; schedule();
-});
+}, undefined, err => console.error('macbook failed', err));
 
 // Contact shadow.
 const shadowCanvas = document.createElement('canvas'); shadowCanvas.width = shadowCanvas.height = 256;
@@ -168,14 +207,8 @@ function update(dt, t) {
     angleVelocity += acc * dt; angle += angleVelocity * dt;
   }
 
-  // Lid pose: the model's rest pose is fully open (OPEN); closing rotates
-  // the lid about the hinge's x axis.
-  // The model rests fully upright (90°).
-  if (hinge) {
-    hinge.rotation.x = lidRest + lidSign * (90 - angle) * Math.PI / 180;
-    // The model's pivot sits a touch above the deck; settle the lid onto it.
-    hinge.position.y = hingeRestY - (0.09 / modelScale) * Math.pow(closing, 2);
-  }
+  // Lid pose: 90° is upright, 0° lies on the keys.
+  if (hinge) hinge.rotation.x = (90 - angle) * Math.PI / 180;
 
   // Camera: from a hero pose (MacBook low, copy above it) to a centred,
   // slightly lower and closer view while it folds.
