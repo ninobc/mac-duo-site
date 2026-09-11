@@ -8,8 +8,8 @@ export const presets = {
 
 export const smoothstep = t => { t = Math.min(Math.max(t, 0), 1); return t * t * (3 - 2 * t); };
 
-/// Where the frozen picture's top edge lands on the glass. Columns stay put,
-/// so the picture always fills the glass edge to edge.
+/// Where the four corners of the frozen picture land on the glass. The far
+/// edge climbs past the top and the sides converge: the picture recedes.
 export function corners(effect, W, H, angle) {
   const travel = Math.max(effect.startAngle - angle, 0);
   const separation = Math.min(effect.depth * travel, 84);
@@ -18,16 +18,18 @@ export function corners(effect, W, H, angle) {
   const normal = { y: -Math.cos(start), z: Math.sin(start) };
   const up = { y: Math.sin(start), z: Math.cos(start) };
   const reach = effect.eyeDistance * H, lift = effect.eyeHeight * H;
-  const eye = { y: centre.y + normal.y * reach + up.y * lift, z: centre.z + normal.z * reach + up.z * lift };
+  const eye = { x: W / 2, y: centre.y + normal.y * reach + up.y * lift, z: centre.z + normal.z * reach + up.z * lift };
   const n = { y: -Math.cos(lid), z: Math.sin(lid) };
   const nDotEye = n.y * eye.y + n.z * eye.z;
-  const q = { y: H * Math.sin(pic), z: H * Math.cos(pic) };
-  const d = { y: q.y - eye.y, z: q.z - eye.z };
-  const nDotD = n.y * d.y + n.z * d.z;
-  const t = Math.abs(nDotD) < 1e-9 ? 1 : Math.max(-nDotEye / nDotD, 1e-3);
-  const hit = { y: eye.y + t * d.y, z: eye.z + t * d.z };
-  const top = Math.max(hit.y * Math.sin(lid) + hit.z * Math.cos(lid), H * 0.5);
-  return [[0, 0], [W, 0], [W, top], [0, top]];
+  function project(px, ph) {
+    const q = { x: px, y: ph * Math.sin(pic), z: ph * Math.cos(pic) };
+    const d = { x: q.x - eye.x, y: q.y - eye.y, z: q.z - eye.z };
+    const nDotD = n.y * d.y + n.z * d.z;
+    const t = Math.abs(nDotD) < 1e-9 ? 1 : Math.max(-nDotEye / nDotD, 1e-3);
+    const hit = { x: eye.x + t * d.x, y: eye.y + t * d.y, z: eye.z + t * d.z };
+    return [hit.x, hit.y * Math.sin(lid) + hit.z * Math.cos(lid)];
+  }
+  return [project(0, 0), project(W, 0), project(W, H), project(0, H)];
 }
 
 export function homography(W, H, c) {

@@ -46,8 +46,8 @@ export const fragmentShader = /* glsl */`
         colour += textureLod(picture, tc + vec2(float(x), float(y)) * stride, lod).rgb * w[x + 1] * w[y + 1] / 16.0;
       }
     }
-    float glowReach = max(0.9 * maxRadius / textureScale, 24.0);
-    colour *= exp(-pow(outside / glowReach, 1.3));
+    float glowReach = max(1.6 * maxRadius / textureScale, 48.0);
+    colour *= mix(1.0, 0.45, smoothstep(0.0, glowReach * 2.5, outside));
     float spread = clamp((g - dimStart) / max(1.0 - dimStart, 0.05), 0.0, 1.0);
     float dim = dimStrength * pow(spread, 1.9) * maxDim;
     colour *= pow(1.0 - dim, 1.6);
