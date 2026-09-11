@@ -150,7 +150,7 @@ footer { padding: 40px 0 60px; color: var(--ink-3); font-size: 14px; border-top:
   .nav { gap: 12px; }
   .stage { height: 360vh; }
   .hero-copy { top: 10vh; }
-  .captions { left: 24px; bottom: 26vh; max-width: 280px; }
+  .captions { left: 24px; bottom: 30vh; max-width: 280px; }
   .caption { font-size: 18px; width: 260px; }
   .readout { right: 16px; bottom: 16px; padding: 10px 12px; }
   .readout input { width: 120px; }

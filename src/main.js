@@ -152,7 +152,7 @@ function layout() {
   renderer.setSize(w, h, false);
   camera.aspect = w / h;
   // Keep the MacBook framed on narrow screens.
-  camera.fov = w / h < 0.9 ? 40 : (w / h < 1.3 ? 32 : 26);
+  camera.fov = w / h < 0.7 ? 54 : (w / h < 0.9 ? 46 : (w / h < 1.3 ? 34 : 26));
   camera.updateProjectionMatrix();
 }
 
