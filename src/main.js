@@ -182,10 +182,10 @@ function update(dt, t) {
   // Camera: from a hero pose (MacBook low, copy above it) to a centred,
   // slightly lower and closer view while it folds.
   const heroT = Math.min(progress / 0.2, 1);
-  const camY = 3.1 - 1.4 * ease(heroT), camZ = 9.8 - 2.6 * ease(heroT);
+  const camY = 3.3 - 1.6 * ease(heroT), camZ = 10.4 - 3.2 * ease(heroT);
   const idle = reduced ? 0 : (1 - heroT) * Math.sin(t * 0.7) * 0.04;
   camera.position.set(Math.sin(t * 0.13) * 0.25 * (1 - heroT), camY + idle, camZ);
-  lookAt.set(0, 2.5 - 1.55 * ease(heroT), 0);
+  lookAt.set(0, 2.95 - 2.0 * ease(heroT), 0);
   camera.lookAt(lookAt);
   mac.rotation.y = -0.18 + 0.36 * (0.5 - 0.5 * Math.cos(closing * Math.PI)) * 0.35;
 
