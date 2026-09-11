@@ -1,9 +1,9 @@
 // Ported from the app's DuoCore: FoldGeometry, Homography, FoldCurve.
 
 export const presets = {
-  duo:       { startAngle: 100, span: 60, blurRadius: 72,  blurFloor: 0.06, dimming: 1,   dimStart: 0.12, depth: 1,   eyeDistance: 2.6, eyeHeight: 0.15, sheen: 0.5,  grain: 0.5 },
-  soft:      { startAngle: 95,  span: 45, blurRadius: 48,  blurFloor: 0.06, dimming: 0.7, dimStart: 0.12, depth: 0.8, eyeDistance: 2.6, eyeHeight: 0.15, sheen: 0.35, grain: 0.5 },
-  cinematic: { startAngle: 110, span: 75, blurRadius: 110, blurFloor: 0.06, dimming: 1,   dimStart: 0.12, depth: 1.3, eyeDistance: 2.1, eyeHeight: 0.15, sheen: 0.7,  grain: 0.5 },
+  duo:       { startAngle: 95,  span: 60, blurRadius: 120, blurFloor: 0, dimming: 1,   dimStart: 0, dimReach: 0.55, dimHingeFloor: 0.2,  depth: 1,   eyeDistance: 4.0, eyeHeight: 0, sheen: 0.3,  grain: 0.5 },
+  soft:      { startAngle: 90,  span: 50, blurRadius: 70,  blurFloor: 0, dimming: 0.7, dimStart: 0, dimReach: 0.75, dimHingeFloor: 0.1,  depth: 0.8, eyeDistance: 4.0, eyeHeight: 0, sheen: 0.25, grain: 0.5 },
+  cinematic: { startAngle: 105, span: 70, blurRadius: 150, blurFloor: 0, dimming: 1,   dimStart: 0, dimReach: 0.5,  dimHingeFloor: 0.25, depth: 1.2, eyeDistance: 3.0, eyeHeight: 0, sheen: 0.5,  grain: 0.5 },
 };
 
 export const smoothstep = t => { t = Math.min(Math.max(t, 0), 1); return t * t * (3 - 2 * t); };
@@ -67,8 +67,8 @@ export function frame(effect, W, H, angle) {
   const envelope = 4 * progress * (1 - progress);
   return {
     inverse, visibleTop, progress,
-    blurStrength: Math.pow(progress, 1.45),
-    dimStrength: Math.pow(progress, 0.9),
+    blurStrength: Math.pow(progress, 1.6),
+    dimStrength: Math.pow(progress, 0.7),
     sheenAmount: effect.sheen * 0.16 * Math.pow(envelope, 1.5),
     sheenPos: 0.15 + 0.75 * progress,
   };

@@ -58,7 +58,7 @@ const uniforms = {
   textureScale: { value: 1 },
   maxRadius: { value: effect.blurRadius },
   blurStrength: { value: 0 }, blurFloor: { value: effect.blurFloor }, maxDim: { value: effect.dimming }, maxLevel: { value: 10 },
-  dimStart: { value: effect.dimStart }, dimStrength: { value: 0 }, visibleTop: { value: 1 },
+  dimStart: { value: effect.dimStart }, dimReach: { value: effect.dimReach }, dimHinge: { value: effect.dimHingeFloor }, dimStrength: { value: 0 }, visibleTop: { value: 1 },
   sheenAmount: { value: 0 }, sheenPos: { value: 0 }, grain: { value: effect.grain }, time: { value: 0 }, brightness: { value: 1 },
 };
 const screenMaterial = new THREE.ShaderMaterial({ uniforms, vertexShader, fragmentShader, glslVersion: THREE.GLSL3 });

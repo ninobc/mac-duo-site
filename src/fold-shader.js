@@ -17,7 +17,7 @@ export const fragmentShader = /* glsl */`
   uniform sampler2D picture;
   uniform mat3 toPicture;
   uniform vec2 screenSize, paddedOrigin, paddedSize;
-  uniform float textureScale, maxRadius, blurStrength, blurFloor, maxDim, maxLevel, dimStart, dimStrength, visibleTop, sheenAmount, sheenPos, grain, time, brightness;
+  uniform float textureScale, maxRadius, blurStrength, blurFloor, maxDim, maxLevel, dimStart, dimReach, dimHinge, dimStrength, visibleTop, sheenAmount, sheenPos, grain, time, brightness;
   float hash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
   void main() {
     vec2 screenPoint = vUv * screenSize;
@@ -47,9 +47,9 @@ export const fragmentShader = /* glsl */`
     }
     float glowReach = max(1.6 * maxRadius / textureScale, 48.0);
     colour *= mix(1.0, 0.45, smoothstep(0.0, glowReach * 2.5, outside));
-    float spread = clamp((g - dimStart) / max(1.0 - dimStart, 0.05), 0.0, 1.0);
-    float dim = dimStrength * pow(spread, 1.9) * maxDim;
-    colour *= pow(1.0 - dim, 1.6);
+    float spread = smoothstep(dimStart, max(dimReach, dimStart + 0.05), g);
+    float dim = dimStrength * (dimHinge + (1.0 - dimHinge) * spread) * maxDim;
+    colour *= pow(1.0 - dim, 2.0);
     if (sheenAmount > 0.0005) {
       float band = exp(-pow((g - sheenPos) / 0.22, 2.0));
       vec3 average = textureLod(picture, vec2(0.5), maxLevel).rgb;
