@@ -185,7 +185,8 @@ function update(dt, t) {
   const camY = 3.3 - 1.6 * ease(heroT), camZ = 10.4 - 3.2 * ease(heroT);
   const idle = reduced ? 0 : (1 - heroT) * Math.sin(t * 0.7) * 0.04;
   camera.position.set(Math.sin(t * 0.13) * 0.25 * (1 - heroT), camY + idle, camZ);
-  lookAt.set(0, 2.95 - 2.0 * ease(heroT), 0);
+  const narrow = camera.aspect < 0.9 ? 0.5 : 0;
+  lookAt.set(0, 2.95 + narrow - (2.0 + narrow) * ease(heroT), 0);
   camera.lookAt(lookAt);
   mac.rotation.y = -0.18 + 0.36 * (0.5 - 0.5 * Math.cos(closing * Math.PI)) * 0.35;
 
