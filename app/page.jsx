@@ -116,6 +116,31 @@ export default function Home() {
             <details><summary>Is it affiliated with Apple?</summary><p>No. Mac Duo is an independent project inspired by the iPhone Duo fold. iPhone, MacBook and macOS are trademarks of Apple Inc.</p></details>
           </div>
         </section>
+        <section className="section" id="coffee">
+          <div className="wrap">
+            <div className="coffee-card">
+              <div className="coffee-cup" aria-hidden="true">
+                <svg viewBox="0 0 64 64" width="72" height="72">
+                  <g className="steam" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+                    <path d="M24 20c-3-4 3-6 0-10" /><path d="M32 18c-3-4 3-6 0-10" /><path d="M40 20c-3-4 3-6 0-10" />
+                  </g>
+                  <path d="M14 28h34v12a12 12 0 0 1-12 12H26a12 12 0 0 1-12-12z" fill="currentColor" opacity=".92" />
+                  <path d="M48 31h4a6 6 0 0 1 0 12h-4" fill="none" stroke="currentColor" strokeWidth="2.4" />
+                  <path d="M12 56h40" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" opacity=".5" />
+                </svg>
+              </div>
+              <div className="coffee-copy">
+                <p className="kicker">From the person who made this</p>
+                <h2>Free, and made at 1 a.m.</h2>
+                <p>Mac Duo started as a &quot;how hard can it be&quot; on a weeknight and turned into this. It&apos;s free, there&apos;s no pro version coming, and nothing in it phones home. If closing your MacBook became the best part of your day, a coffee keeps the next late night going.</p>
+                <div className="cta">
+                  <a className="button dark" href="https://pay.ziina.com/ninoo?source=app" rel="noopener" target="_blank">Buy me a coffee</a>
+                  <span className="meta">Secure payment through Ziina · Thank you, genuinely.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
       </main>
       <Footer />
     </>
@@ -127,7 +152,7 @@ export function Footer() {
     <footer>
       <div className="wrap foot">
         <a className="brand" href="/"><img src="/assets/icon-180.png" width="24" height="24" alt="" /><span>Mac Duo</span></a>
-        <p>© 2026 Nino Bouchedid · <a href="/privacy/">Privacy</a> · <a href="https://github.com/ninobc/mac-duo" rel="noopener">Source</a> · <a href="mailto:hello@mac-duo.com">hello@mac-duo.com</a></p>
+        <p>© 2026 Nino Bouchedid · <a href="/privacy/">Privacy</a> · <a href="https://github.com/ninobc/mac-duo" rel="noopener">Source</a> · <a href="https://pay.ziina.com/ninoo?source=app" rel="noopener">Buy me a coffee</a> · <a href="mailto:hello@mac-duo.com">hello@mac-duo.com</a></p>
         <p className="meta">Not affiliated with Apple. The MacBook Pro model shown is Apple&apos;s AR Quick Look asset, used for illustration only.</p>
       </div>
     </footer>
