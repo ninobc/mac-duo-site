@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0",
+  "version": "1.0.1",
   "url": "https://github.com/ninobc/mac-duo/releases/latest/download/Mac-Duo.dmg",
-  "notes": "Mac Duo 1.0.0 is the first release."
+  "notes": "Mac Duo 1.0.1: Check for Updates now downloads the disk image and opens it."
 }
