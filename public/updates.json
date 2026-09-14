@@ -1,5 +1,5 @@
 {
-  "version": "1.0.1",
+  "version": "1.0.2",
   "url": "https://github.com/ninobc/mac-duo/releases/latest/download/Mac-Duo.dmg",
-  "notes": "Mac Duo 1.0.1: Check for Updates now downloads the disk image and opens it."
+  "notes": "Mac Duo 1.0.2 is notarized by Apple: no more \"Not Opened\" warning. Stronger sense of depth in the fold."
 }
