@@ -88,7 +88,7 @@ export default function Home() {
                 <h2>Up and running in a minute.</h2>
                 <ol>
                   <li><strong>Download</strong> the disk image and drag Mac Duo to Applications.</li>
-                  <li><strong>Open it.</strong> If macOS can&apos;t verify the developer, right-click the app and choose Open.</li>
+                  <li><strong>Open it.</strong> macOS will say it can&apos;t verify Mac Duo. Click Done, then in System Settings › Privacy &amp; Security choose <em>Open Anyway</em>. Once is enough.</li>
                   <li><strong>Allow Screen Recording</strong> when asked. It&apos;s how Mac Duo sees the desktop while the lid moves.</li>
                 </ol>
                 <div className="cta">
@@ -110,6 +110,7 @@ export default function Home() {
             <details><summary>Will it slow my Mac down?</summary><p>Not while the lid is still. Idle, Mac Duo reads a sensor a few times a second. Folding is one Metal pass per frame, which Apple silicon handles at the display&apos;s full refresh rate.</p></details>
             <details><summary>What happens when the Mac sleeps?</summary><p>The fold plays until the lid&apos;s magnet switches the display off, a few degrees before fully closed. That&apos;s hardware; no app can keep the panel lit with the lid shut. Turn on Focus on Wake and the desktop comes back into focus when you open the lid.</p></details>
             <details><summary>Why do I see the login screen instead of the wake reveal?</summary><p>macOS asks for your password immediately after the display turns off. Set System Settings › Lock Screen › &quot;Require password after display is turned off&quot; to a short delay, and reopening within it goes straight to your desktop, where Mac Duo plays the reveal. Mac Duo cannot draw over the login window.</p></details>
+            <details><summary>Why does macOS say &quot;Mac Duo&quot; Not Opened?</summary><p>Mac Duo isn&apos;t notarized with Apple yet, so macOS can&apos;t look up its signature and shows that warning on first launch. It isn&apos;t a finding. Click Done, open System Settings › Privacy &amp; Security, scroll to the bottom and click Open Anyway. macOS remembers it. The source is public on <a href="https://github.com/ninobc/mac-duo" rel="noopener">GitHub</a>, and the app never touches the network except to check for updates.</p></details>
             <details><summary>Does it work with an external display?</summary><p>The fold plays on the MacBook&apos;s own screen. External displays are left alone.</p></details>
             <details><summary>Which Macs have the sensor?</summary><p>MacBook Pro 14-inch and 16-inch from 2021 on, the 2019 16-inch MacBook Pro, and MacBook Air with M2 or later. On other Macs, Mac Duo stays quiet.</p></details>
             <details><summary>How do updates work?</summary><p>Mac Duo checks GitHub Releases once a day, or whenever you choose Check for Updates. A new version downloads to your Downloads folder and opens, one drag from installed.</p></details>
